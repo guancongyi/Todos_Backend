@@ -165,7 +165,6 @@ router.post('/setList', async ctx =>{
     })
     
     ctx.body = await new Promise((resolve, reject) => {
-        console.log('before find');
         mongodb.collection('lists').findOne({'_id':id }, function (err, doc) {
             let tid;
             doc.lists.forEach((item, idx)=>{
@@ -174,10 +173,7 @@ router.post('/setList', async ctx =>{
                 }
             })
             doc.lists[tid].tasks = tasks;
-            console.log('before update');
-
-            mongodb.collection('lists').updateOne({'_id':id}, {$set: {"lists": doc.lists}});
-            console.log(tasks.length)
+            resolve(mongodb.collection('lists').updateOne({'_id':id}, {$set: {"lists": doc.lists}}));
         });
     })
  
