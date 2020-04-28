@@ -4,23 +4,39 @@ const koaBody = require("koa-body");
 const MongoClient = require('mongodb').MongoClient;
 const bcrypt = require('bcrypt');
 const { buildUser, buildList } = require('./payload.js')
+const qs = require('qs')
+const queryString = require('query-string');
 
 let app = new Koa();
 let router = new Router();
 
-
 app.use(koaBody({
     multipart: true,
+    json: true
 }))
 
+// mongodb connection pooling
+let mongodb;
 const uri = "mongodb+srv://guan:Apply2015!@cluster0-kldaq.mongodb.net/test?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useUnifiedTopology: true });
+let client = new MongoClient(uri,{
+    useUnifiedTopology: true,
+    poolSize: 6,
+});
+client.connect(function(err, db){
+    mongodb=client.db('todos');
+    // mongodb.collection("users").findOne({ }, function (err, doc) {
+    //     console.log(doc)
+    // })
+
+})
+
 
 router.get("/test", ctx=>{
     ctx.set("Access-Control-Allow-Origin", "http://localhost:3000");
     console.log(1)
     ctx.body = "Hello"
 })
+
 router.get("/", ctx => {
     ctx.redirect("/index")
 })
@@ -65,7 +81,7 @@ router.post("/login", async ctx => {
     ctx.set("Access-Control-Allow-Origin", "http://localhost:3000");
     // ctx.set('Content-Type', 'multipart/form-data')
     // console.log(ctx.request.body)
-    console.log(1)
+    console.log('at login')
     let isGoogle = (ctx.request.body['isGoogle'] === 'true');
     if (isGoogle) {
         let id = ctx.request.body['id'];
@@ -119,20 +135,52 @@ router.post("/login", async ctx => {
 })
 
 router.get('/getLists', async ctx => {
+    console.log('get list');
     ctx.set("Access-Control-Allow-Origin", "http://localhost:3000");
     let id = ctx.request.query['id'];
 
     ctx.body = await new Promise((resolve, reject) => {
-        client.connect(function (err, client, status) {
-            let listsTbl = client.db('todos').collection('lists');
-            listsTbl.findOne({ "_id": id }, function (err, doc) {
-                console.log(doc);
-                resolve(doc);
-            })
-
-        });
-
+        mongodb.collection('lists').findOne({ "_id": id }, function (err, doc) {
+            // console.log(doc.lists);
+            console.log(doc.length)
+            resolve(doc);
+        })
     })
+})
+
+router.post('/setList', async ctx =>{
+    ctx.set("Access-Control-Allow-Origin", "http://localhost:3000");
+    console.log('set list');
+    
+    let id = ctx.request.body['id'];
+    let listName = ctx.request.body['list'];
+    let data = ctx.request.body['data'];
+    // console.log(id, listName, data, qs.parse(data))
+    // console.log(Object.values(qs.parse(data)))
+    let tasks = Object.values(qs.parse(data));
+
+    // convert 'true' to real true
+    tasks.forEach((task)=>{
+        task['done'] = (task['done'] === 'true')
+    })
+    
+    ctx.body = await new Promise((resolve, reject) => {
+        console.log('before find');
+        mongodb.collection('lists').findOne({'_id':id }, function (err, doc) {
+            let tid;
+            doc.lists.forEach((item, idx)=>{
+                if(item.name == listName){
+                    tid = idx;
+                }
+            })
+            doc.lists[tid].tasks = tasks;
+            console.log('before update');
+
+            mongodb.collection('lists').updateOne({'_id':id}, {$set: {"lists": doc.lists}});
+            console.log(tasks.length)
+        });
+    })
+ 
 })
 
 
