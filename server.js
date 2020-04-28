@@ -153,7 +153,7 @@ router.post('/setList', async ctx =>{
     console.log('set list');
     
     let id = ctx.request.body['id'];
-    let listName = ctx.request.body['list'];
+    let listId = ctx.request.body['list'];
     let data = ctx.request.body['data'];
     // console.log(id, listName, data, qs.parse(data))
     // console.log(Object.values(qs.parse(data)))
@@ -166,13 +166,7 @@ router.post('/setList', async ctx =>{
     
     ctx.body = await new Promise((resolve, reject) => {
         mongodb.collection('lists').findOne({'_id':id }, function (err, doc) {
-            let tid;
-            doc.lists.forEach((item, idx)=>{
-                if(item.name == listName){
-                    tid = idx;
-                }
-            })
-            doc.lists[tid].tasks = tasks;
+            doc.lists[listId].tasks = tasks;
             resolve(mongodb.collection('lists').updateOne({'_id':id}, {$set: {"lists": doc.lists}}));
         });
     })
