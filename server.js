@@ -173,6 +173,29 @@ router.post('/setList', async ctx =>{
  
 })
 
+router.post('/addList', async ctx =>{
+    ctx.set("Access-Control-Allow-Origin", "http://localhost:3000");
+    console.log('add list');
+    
+    let id = ctx.request.body['id'];
+    let listName = ctx.request.body['listName'];
+    let data = ctx.request.body['data'];
+    let tasks = Object.values(qs.parse(data));
+    console.log(tasks)
+
+    // convert 'true' to real true
+    tasks.forEach((task)=>{
+        task['done'] = (task['done'] === 'true')
+    })
+    
+    ctx.body = await new Promise((resolve, reject) => {
+        mongodb.collection('lists').findOne({'_id':id }, function (err, doc) {
+            resolve(mongodb.collection('lists').updateOne({'_id':id}, {$push: {"lists": {"name":listName ,"tasks": tasks}}}));
+        });
+    })
+ 
+})
+
 
 
 app.use(router.routes());
