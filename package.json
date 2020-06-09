@@ -24,5 +24,14 @@
     "promise-mysql": "^4.1.3",
     "query-string": "^6.12.1",
     "query-types": "^0.1.4"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guancongyi/Todos_Backend.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/guancongyi/Todos_Backend/issues"
+  },
+  "homepage": "https://github.com/guancongyi/Todos_Backend#readme"
 }

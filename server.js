@@ -1,4 +1,21 @@
 const Koa = require("koa");
+const koaBody = require("koa-body");
+const Router = require('./routers')
+
+let app = new Koa();
+app.use(koaBody({
+    multipart: true,
+    json: true
+}))
+app.use(async (ctx, next)=>{
+    ctx.set("Access-Control-Allow-Origin", "http://localhost:3000");
+    await next();
+})
+Router(app)
+app.listen(8787)
+
+/*
+const Koa = require("koa");
 const Router = require("koa-router");
 const koaBody = require("koa-body");
 const MongoClient = require('mongodb').MongoClient;
@@ -200,3 +217,4 @@ router.post('/addList', async ctx =>{
 
 app.use(router.routes());
 app.listen(8787)
+ */
