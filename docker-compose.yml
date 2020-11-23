@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+  todos_backend:
+    image: todos_backend
+    build: .
+    environment:
+      NODE_ENV: development
+    ports:
+        - 8888:8888
+    links:
+        - mongo
+    volumes:
+        - .:/usr/src/app
+
+  mongo:
+    image: mongo
+    ports:
+        - 27017:27017
+
+  mongo-express:
+    image: mongo-express
+    ports:
+        - 8081:8081
+
