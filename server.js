@@ -15,7 +15,7 @@ mongoose.connect('mongodb://mongo:27017/to_dos', { useNewUrlParser: true })
 let db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error'))
 db.once('open', function () {
-    console.log('connected!!!');
+    console.log('connected to database successfully!!!');
 })
 
 Router(app);
